@@ -1,0 +1,278 @@
+:root {
+    --primary: #25a9f4;
+    --primary-hover: #1995dc;
+    --background: #e6e9f4;
+    --surface: #ffffff;
+    --text-primary: #6c72d6;
+    --text-secondary: #9ea9db;
+    --outline-variant: #e0e2ec;
+    --error: #ba1a1a;
+    --radius-card: 20px;
+    --radius-input: 24px;
+    --font: 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background);
+    position: relative;
+    overflow: hidden;
+}
+
+/* SVG Background elements */
+.bg-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-shape-top-right {
+    position: absolute;
+    top: -8%;
+    right: -8%;
+    width: 35%;
+    max-width: 500px;
+    height: auto;
+    z-index: 1;
+    transform: rotate(-10deg);
+}
+
+.bg-shape-bottom-left {
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 35%;
+    max-width: 500px;
+    height: auto;
+    z-index: 1;
+}
+
+/* Centered login card */
+.login-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+}
+
+.login-card {
+    background: var(--surface);
+    padding: 56px 40px;
+    border-radius: var(--radius-card);
+    box-shadow: 0 12px 32px rgba(108, 114, 214, 0.08);
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: card-appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes card-appear {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+    align-self: flex-start;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    font-weight: 500;
+    align-self: flex-start;
+}
+
+/* Form styling */
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 24px;
+    position: relative;
+    width: 100%;
+}
+
+/* Custom minimal bottom-border inputs */
+.form-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid var(--outline-variant);
+    background: transparent;
+    padding: 12px 4px;
+    font-size: 16px;
+    font-family: var(--font);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.25s ease, padding 0.25s ease;
+}
+
+.form-input::placeholder {
+    color: transparent; /* Needed for floating label logic */
+}
+
+/* Focus state for input */
+.form-input:focus {
+    border-bottom-color: var(--primary);
+}
+
+/* Floating Label Pattern */
+.form-label {
+    position: absolute;
+    left: 4px;
+    top: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+/* Push label up on focus or when input is filled */
+.form-input:focus ~ .form-label,
+.form-input:not(:placeholder-shown) ~ .form-label {
+    top: -10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Validation error messaging under inputs */
+.error-message {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--error);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 18px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.error-message.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Main General Alert banner */
+.general-error {
+    background: #ffebeb;
+    border: 1px solid rgba(186, 26, 26, 0.15);
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: var(--error);
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 24px;
+    width: 100%;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+/* Rounded custom primary action button */
+.btn-login {
+    width: 120px;
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+    font-size: 15px;
+    border-radius: var(--radius-input);
+    box-shadow: 0 4px 12px rgba(37, 169, 244, 0.3);
+    transition: all 0.2s ease;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    border: none;
+    cursor: pointer;
+    align-self: center;
+}
+
+.btn-login:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 169, 244, 0.4);
+    background: var(--primary-hover);
+}
+
+.btn-login:active {
+    transform: translateY(1px);
+}
+
+.btn-login:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Spinner for loading state */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s ease-in-out infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.align-c {
+    text-align: center !important;
+    align-self: center !important;
+    width: 100%;
+}
+
+.login-logo-container {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.login-logo {
+    max-height: 48px;
+    width: auto;
+    object-fit: contain;
+}

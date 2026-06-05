@@ -1,0 +1,648 @@
+{
+	"info": {
+		"_postman_id": "c1f7b8fb-8fa3-43ef-adbf-9b98cecae834",
+		"name": "AdMetrics Insights API Collection",
+		"description": "Postman collection containing both the local PHP Controller and all backend third-party Meta/Instagram Graph API endpoints used by the Insights page.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Local PHP Controller",
+			"item": [
+				{
+					"name": "Fetch Insights Local Controller",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/fetch_insights.php?since={{since}}&until={{until}}&nocache=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"fetch_insights.php"
+							],
+							"query": [
+								{
+									"key": "since",
+									"value": "{{since}}",
+									"description": "Start date (YYYY-MM-DD)"
+								},
+								{
+									"key": "until",
+									"value": "{{until}}",
+									"description": "End date (YYYY-MM-DD)"
+								},
+								{
+									"key": "nocache",
+									"value": "1",
+									"description": "Bypass local SimpleCache"
+								}
+							]
+						},
+						"description": "Hits your local PHP server to run the full aggregated insight pipeline."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Meta Graph API v19.0",
+			"item": [
+				{
+					"name": "1. Discovery & Token Exchange",
+					"item": [
+						{
+							"name": "Exchange User Token for Page Tokens",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"me",
+										"accounts"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,name,access_token"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Retrieves pages managed by the active user token and gets the respective Page Access Tokens."
+							},
+							"response": []
+						},
+						{
+							"name": "Validate Account Token (/me)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/me?fields=id,name&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"me"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,name"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Basic fallback check to confirm identity of the active token."
+							},
+							"response": []
+						},
+						{
+							"name": "Discover Instagram Business Account ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{pageId}}?fields=instagram_business_account&access_token={{pageAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{pageId}}"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "instagram_business_account"
+										},
+										{
+											"key": "access_token",
+											"value": "{{pageAccessToken}}"
+										}
+									]
+								},
+								"description": "Queries the Facebook Page's metadata to discover its linked Instagram Business Account ID."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "2. Facebook Published Posts",
+					"item": [
+						{
+							"name": "Fetch Facebook Published Posts & Post Insights",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{pageId}}/published_posts?fields=id,message,created_time,permalink_url,full_picture,attachments{media_type,type},reactions.summary(total_count),comments.summary(total_count),shares,insights.metric(post_impressions_unique,post_clicks,post_reactions_like_total,post_video_views){values}&limit=50&access_token={{pageAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{pageId}}",
+										"published_posts"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,message,created_time,permalink_url,full_picture,attachments{media_type,type},reactions.summary(total_count),comments.summary(total_count),shares,insights.metric(post_impressions_unique,post_clicks,post_reactions_like_total,post_video_views){values}"
+										},
+										{
+											"key": "limit",
+											"value": "50"
+										},
+										{
+											"key": "access_token",
+											"value": "{{pageAccessToken}}"
+										}
+									]
+								},
+								"description": "Loads the published posts feed on the Facebook Page with nested impressions, clicks, shares, and reactions."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "3. Instagram Media & Active Stories",
+					"item": [
+						{
+							"name": "Fetch Instagram Media List",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{igUserId}}/media?fields=id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count,media_product_type&limit=50&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{igUserId}}",
+										"media"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count,media_product_type"
+										},
+										{
+											"key": "limit",
+											"value": "50"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Retrieves the list of IG Media objects published by the business profile."
+							},
+							"response": []
+						},
+						{
+							"name": "Fetch Instagram Active Stories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{igUserId}}/stories?fields=id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count,media_product_type&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{igUserId}}",
+										"stories"
+									],
+									"query": [
+										{
+											"key": "fields",
+											"value": "id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count,media_product_type"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Loads all active stories published within the past 24 hours."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "4. Instagram Specific Media Insights",
+					"item": [
+						{
+							"name": "Instagram Insights - Feed Posts & Carousel Albums",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{mediaId}}/insights?metric=reach,impressions,saved&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{mediaId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "reach,impressions,saved"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Fetches standard post metrics for static single-image posts or carousel albums."
+							},
+							"response": []
+						},
+						{
+							"name": "Instagram Insights - Reels",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{mediaId}}/insights?metric=reach,views,likes,comments,shares,saved,total_interactions,ig_reels_avg_watch_time,ig_reels_video_view_total_time&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{mediaId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "reach,views,likes,comments,shares,saved,total_interactions,ig_reels_avg_watch_time,ig_reels_video_view_total_time"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Fetches dedicated Instagram Reels playback views, interaction volumes, and watch retention times."
+							},
+							"response": []
+						},
+						{
+							"name": "Instagram Insights - Story Metrics",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{mediaId}}/insights?metric=reach,impressions,replies,shares&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{mediaId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "reach,impressions,replies,shares"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Fetches raw impressions, reach, replies, and shares for an active story."
+							},
+							"response": []
+						},
+						{
+							"name": "Instagram Insights - Story Navigation Breakdown",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{mediaId}}/insights?metric=navigation&breakdown=story_navigation_action_type&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{mediaId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "navigation"
+										},
+										{
+											"key": "breakdown",
+											"value": "story_navigation_action_type"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Exposes breakdowns of story interactions (taps_forward, taps_back, exits)."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "5. Page & Profile Analytics",
+					"item": [
+						{
+							"name": "Facebook Page-Level Metrics (Current)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{pageId}}/insights?metric=page_impressions_unique,page_video_views,page_post_engagements,page_views_total&period=day&since={{sinceTimestamp}}&until={{untilTimestamp}}&access_token={{pageAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{pageId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "page_impressions_unique,page_video_views,page_post_engagements,page_views_total"
+										},
+										{
+											"key": "period",
+											"value": "day"
+										},
+										{
+											"key": "since",
+											"value": "{{sinceTimestamp}}"
+										},
+										{
+											"key": "until",
+											"value": "{{untilTimestamp}}"
+										},
+										{
+											"key": "access_token",
+											"value": "{{pageAccessToken}}"
+										}
+									]
+								},
+								"description": "Gathers daily Page impressions, views, actions, and engagements for the active time period."
+							},
+							"response": []
+						},
+						{
+							"name": "Facebook Page-Level Metrics (Previous)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{pageId}}/insights?metric=page_impressions_unique,page_video_views,page_post_engagements,page_views_total&period=day&since={{prevSinceTimestamp}}&until={{prevUntilTimestamp}}&access_token={{pageAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{pageId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "page_impressions_unique,page_video_views,page_post_engagements,page_views_total"
+										},
+										{
+											"key": "period",
+											"value": "day"
+										},
+										{
+											"key": "since",
+											"value": "{{prevSinceTimestamp}}"
+										},
+										{
+											"key": "until",
+											"value": "{{prevUntilTimestamp}}"
+										},
+										{
+											"key": "access_token",
+											"value": "{{pageAccessToken}}"
+										}
+									]
+								},
+								"description": "Gathers historical page data to calculate trend differences."
+							},
+							"response": []
+						},
+						{
+							"name": "Instagram Profile Follower Reach Breakdown",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://graph.facebook.com/v19.0/{{igUserId}}/insights?metric=reach&period=day&metric_type=total_value&breakdown=follow_type&since={{sinceTimestamp}}&until={{untilTimestamp}}&access_token={{userAccessToken}}",
+									"protocol": "https",
+									"host": [
+										"graph",
+										"facebook",
+										"com"
+									],
+									"path": [
+										"v19.0",
+										"{{igUserId}}",
+										"insights"
+									],
+									"query": [
+										{
+											"key": "metric",
+											"value": "reach"
+										},
+										{
+											"key": "period",
+											"value": "day"
+										},
+										{
+											"key": "metric_type",
+											"value": "total_value"
+										},
+										{
+											"key": "breakdown",
+											"value": "follow_type"
+										},
+										{
+											"key": "since",
+											"value": "{{sinceTimestamp}}"
+										},
+										{
+											"key": "until",
+											"value": "{{untilTimestamp}}"
+										},
+										{
+											"key": "access_token",
+											"value": "{{userAccessToken}}"
+										}
+									]
+								},
+								"description": "Exposes total profile reach split by follower status."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+				"id": "b3e34b9f-0744-42b7-a3f1-b997ee9cf451"
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+				"id": "e0e2cf77-ee87-43cf-bc87-9bc649bf049b"
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost/add_campign_test",
+			"type": "string"
+		},
+		{
+			"key": "since",
+			"value": "2026-05-01",
+			"type": "string"
+		},
+		{
+			"key": "until",
+			"value": "2026-05-22",
+			"type": "string"
+		},
+		{
+			"key": "userAccessToken",
+			"value": "YOUR_USER_ACCESS_TOKEN",
+			"type": "string"
+		},
+		{
+			"key": "pageAccessToken",
+			"value": "YOUR_PAGE_ACCESS_TOKEN",
+			"type": "string"
+		},
+		{
+			"key": "pageId",
+			"value": "YOUR_PAGE_ID",
+			"type": "string"
+		},
+		{
+			"key": "igUserId",
+			"value": "YOUR_IG_USER_ID",
+			"type": "string"
+		},
+		{
+			"key": "mediaId",
+			"value": "YOUR_MEDIA_ID",
+			"type": "string"
+		},
+		{
+			"key": "sinceTimestamp",
+			"value": "1777593600",
+			"type": "string"
+		},
+		{
+			"key": "untilTimestamp",
+			"value": "1779408000",
+			"type": "string"
+		},
+		{
+			"key": "prevSinceTimestamp",
+			"value": "1775779200",
+			"type": "string"
+		},
+		{
+			"key": "prevUntilTimestamp",
+			"value": "1777593599",
+			"type": "string"
+		}
+	]
+}
